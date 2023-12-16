@@ -1,6 +1,12 @@
-import cv2 
-import numpy as np 
+import sys
 
+try:
+	import cv2
+except ImportError:
+	print("cv2 package not found. Installing opencv-python...")
+	sys.exit(os.system("pip install opencv-python"))
+
+import numpy as np
 # Open the image files. 
 img1_color = cv2.imread("align.jpg") # Image to be aligned. 
 img2_color = cv2.imread("ref.jpg") # Reference image. 
@@ -9,6 +15,7 @@ img2_color = cv2.imread("ref.jpg") # Reference image.
 img1 = cv2.cvtColor(img1_color, cv2.COLOR_BGR2GRAY) 
 img2 = cv2.cvtColor(img2_color, cv2.COLOR_BGR2GRAY) 
 height, width = img2.shape 
+
 
 # Create ORB detector with 5000 features. 
 orb_detector = cv2.ORB_create(5000) 
@@ -39,8 +46,8 @@ p1 = np.zeros((no_of_matches, 2))
 p2 = np.zeros((no_of_matches, 2)) 
 
 for i in range(len(matches)): 
-p1[i, :] = kp1[matches[i].queryIdx].pt 
-p2[i, :] = kp2[matches[i].trainIdx].pt 
+	p1[i, :] = kp1[matches[i].queryIdx].pt 
+	p2[i, :] = kp2[matches[i].trainIdx].pt 
 
 # Find the homography matrix. 
 homography, mask = cv2.findHomography(p1, p2, cv2.RANSAC) 
