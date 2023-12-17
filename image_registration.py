@@ -1,61 +1,35 @@
-import sys
+import cv2
 
-try:
-	import cv2
-except ImportError:
-	print("cv2 package not found. Installing opencv-python...")
-	sys.exit(os.system("pip install opencv-python"))
+# Load the pre-trained face detector model
+face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
 
-import numpy as np
-# Open the image files. 
-img1_color = cv2.imread("align.jpg") # Image to be aligned. 
-img2_color = cv2.imread("ref.jpg") # Reference image. 
+# Open a connection to the camera (0 represents the default camera)(1 represent the camera on my phone)
+if (int(input("camera (0-default or 1-IPhone): ")) == 0):
+	cap = cv2.VideoCapture(0)
+else:
+	cap = cv2.VideoCapture(1)
 
-# Convert to grayscale. 
-img1 = cv2.cvtColor(img1_color, cv2.COLOR_BGR2GRAY) 
-img2 = cv2.cvtColor(img2_color, cv2.COLOR_BGR2GRAY) 
-height, width = img2.shape 
+while True:
+    # Read a frame from the camera
+    ret, frame = cap.read()
 
+    # Convert the frame to grayscale for face detection
+    gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 
-# Create ORB detector with 5000 features. 
-orb_detector = cv2.ORB_create(5000) 
+    # Detect faces in the frame
+    faces = face_cascade.detectMultiScale(gray, scaleFactor=1.3, minNeighbors=5)
 
-# Find keypoints and descriptors. 
-# The first arg is the image, second arg is the mask 
-# (which is not required in this case). 
-kp1, d1 = orb_detector.detectAndCompute(img1, None) 
-kp2, d2 = orb_detector.detectAndCompute(img2, None) 
+    # Draw a rectangle around each detected face
+    for (x, y, w, h) in faces:
+        cv2.rectangle(frame, (x, y), (x+w, y+h), (255, 0, 0), 2)
 
-# Match features between the two images. 
-# We create a Brute Force matcher with 
-# Hamming distance as measurement mode. 
-matcher = cv2.BFMatcher(cv2.NORM_HAMMING, crossCheck = True) 
+    # Display the resulting frame
+    cv2.imshow('Face Detection', frame)
 
-# Match the two sets of descriptors. 
-matches = matcher.match(d1, d2) 
+    # terminate
+    if cv2.waitKey(1) & 0xFF == ord('q'): #pressing q will terminate the program
+        break
 
-# Sort matches on the basis of their Hamming distance. 
-matches.sort(key = lambda x: x.distance) 
-
-# Take the top 90 % matches forward. 
-matches = matches[:int(len(matches)*0.9)] 
-no_of_matches = len(matches) 
-
-# Define empty matrices of shape no_of_matches * 2. 
-p1 = np.zeros((no_of_matches, 2)) 
-p2 = np.zeros((no_of_matches, 2)) 
-
-for i in range(len(matches)): 
-	p1[i, :] = kp1[matches[i].queryIdx].pt 
-	p2[i, :] = kp2[matches[i].trainIdx].pt 
-
-# Find the homography matrix. 
-homography, mask = cv2.findHomography(p1, p2, cv2.RANSAC) 
-
-# Use this matrix to transform the 
-# colored image wrt the reference image. 
-transformed_img = cv2.warpPerspective(img1_color, 
-					homography, (width, height)) 
-
-# Save the output. 
-cv2.imwrite('output.jpg', transformed_img) 
+# Release the camera and close all OpenCV windows
+cap.release()
+cv2.destroyAllWindows()
