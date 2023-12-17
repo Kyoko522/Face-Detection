@@ -1,4 +1,5 @@
 import cv2
+import numpy
 
 # Load the pre-trained face detector model
 face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
@@ -21,7 +22,7 @@ while True:
 
     # Draw a rectangle around each detected face
     for (x, y, w, h) in faces:
-        cv2.rectangle(frame, (x, y), (x+w, y+h), (255, 0, 0), 2)
+        cv2.rectangle(frame, (x, y), (x+w, y+h), (0, 255, 0), 2)
 
     # Display the resulting frame
     cv2.imshow('Face Detection', frame)
