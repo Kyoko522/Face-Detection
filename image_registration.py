@@ -1,14 +1,18 @@
 import cv2
-import numpy
+import numpy as np
+import flask
+
 
 # Load the pre-trained face detector model
 face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
 
 # Open a connection to the camera (0 represents the default camera)(1 represent the camera on my phone)
-if (int(input("camera (0-default or 1-IPhone): ")) == 0):
-	cap = cv2.VideoCapture(0)
-else:
-	cap = cv2.VideoCapture(1)
+# if (int(input("camera (0-default or 1-IPhone): ")) == 0):
+# 	cap = cv2.VideoCapture(0)
+# else:
+cap = cv2.VideoCapture(1)
+
+
 
 while True:
     # Read a frame from the camera
@@ -22,7 +26,7 @@ while True:
 
     # Draw a rectangle around each detected face
     for (x, y, w, h) in faces:
-        cv2.rectangle(frame, (x, y), (x+w, y+h), (0, 255, 0), 2)
+        cv2.rectangle(frame, (x, y), (x+w+100, y+h+100), (0, 255, 0), 2) #make the square green
 
     # Display the resulting frame
     cv2.imshow('Face Detection', frame)
@@ -31,6 +35,6 @@ while True:
     if cv2.waitKey(1) & 0xFF == ord('q'): #pressing q will terminate the program
         break
 
-# Release the camera and close all OpenCV windows
+# Release the camera and close all OpenCV windows when done
 cap.release()
 cv2.destroyAllWindows()
