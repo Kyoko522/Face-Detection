@@ -1,40 +1,53 @@
-import cv2
+import tensorflow as tf
+from tensorflow import keras
+from keras.models import load_model  # TensorFlow is required for Keras to work
+import cv2  # Install opencv-python
 import numpy as np
-import flask
 
+# Disable scientific notation for clarity
+np.set_printoptions(suppress=True)
 
-# Load the pre-trained face detector model
-face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
+# Load the model
+model = load_model("keras_Model.h5", compile=False)
 
-# Open a connection to the camera (0 represents the default camera)(1 represent the camera on my phone)
-# if (int(input("camera (0-default or 1-IPhone): ")) == 0):
-# 	cap = cv2.VideoCapture(0)
-# else:
-cap = cv2.VideoCapture(1)
+# Load the labels
+class_names = open("labels.txt", "r").readlines()
 
-
+# CAMERA can be 0 or 1 based on default camera of your computer
+camera = cv2.VideoCapture(1)
 
 while True:
-    # Read a frame from the camera
-    ret, frame = cap.read()
+    # Grab the webcamera's image.
+    ret, image = camera.read()
 
-    # Convert the frame to grayscale for face detection
-    gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+    # Resize the raw image into (224-height,224-width) pixels
+    image = cv2.resize(image, (224, 224), interpolation=cv2.INTER_AREA)
 
-    # Detect faces in the frame
-    faces = face_cascade.detectMultiScale(gray, scaleFactor=1.3, minNeighbors=5)
+    # Show the image in a window
+    cv2.imshow("Webcam Image", image)
 
-    # Draw a rectangle around each detected face
-    for (x, y, w, h) in faces:
-        cv2.rectangle(frame, (x, y), (x+w+100, y+h+100), (0, 255, 0), 2) #make the square green
+    # Make the image a numpy array and reshape it to the models input shape.
+    image = np.asarray(image, dtype=np.float32).reshape(1, 224, 224, 3)
 
-    # Display the resulting frame
-    cv2.imshow('Face Detection', frame)
+    # Normalize the image array
+    image = (image / 127.5) - 1
 
-    # terminate
-    if cv2.waitKey(1) & 0xFF == ord('q'): #pressing q will terminate the program
+    # Predicts the model
+    prediction = model.predict(image)
+    index = np.argmax(prediction)
+    class_name = class_names[index]
+    confidence_score = prediction[0][index]
+
+    # Print prediction and confidence score
+    print("Class:", class_name[2:], end="")
+    print("Confidence Score:", str(np.round(confidence_score * 100))[:-2], "%")
+
+    # Listen to the keyboard for presses.
+    keyboard_input = cv2.waitKey(1)
+
+    # 27 is the ASCII for the esc key on your keyboard.
+    if keyboard_input == 27:
         break
 
-# Release the camera and close all OpenCV windows when done
-cap.release()
+camera.release()
 cv2.destroyAllWindows()

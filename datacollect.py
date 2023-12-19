@@ -22,7 +22,7 @@ else:
 
 while True:
 	ret,frame=video.read()
-	faces=facedetect.detectMultiScale(frame,1.3,5)
+	faces=facedetect.detectMultiScale(frame,1.5,5)
 	for x,y,w,h in faces:
 		count+=1
 		name='./image/'+nameID+'/'+str(count) +'.jpg'
