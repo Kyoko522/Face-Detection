@@ -9,7 +9,7 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 image_dir = os.path.join(BASE_DIR, "image")
 
 facedetect = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
-# recognizer = cv2.face_LBPHFaceRecognizer.create()
+recognizer = cv2.face.LBPHFaceRecognizer.create()
 
 current_id = 0
 label_ids = {}
@@ -40,8 +40,8 @@ for root, dirs, files in os.walk(image_dir):
 				x_train.append(roi)
 				y_label.append(id_)
 
-# print(y_label)
-# print(x_train)
+print(y_label)
+print(x_train)
 
 with open('labels.pickle', 'wb') as f:
 	pickle.dump(label_ids, f)
